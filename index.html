@@ -4104,5 +4104,30 @@ $("#themeToggle").addEventListener("click", function(){
 });
 route();
 </script>
+
+<script>
+/* Lazy backgrounds: only load thumbnail images when they near the screen,
+   so the 415-card strip cannot starve the visible cards on slow networks. */
+(function(){
+  if (!('IntersectionObserver' in window)) return;
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(en){
+      if (en.isIntersecting) { var el = en.target; el.style.backgroundImage = el._bg; io.unobserve(el); }
+    });
+  }, { rootMargin: '500px' });
+  function defer(root){
+    if (!root || root.nodeType !== 1) return;
+    var els = root.querySelectorAll ? root.querySelectorAll('.thumb-panel,.thumb-single') : [];
+    els.forEach(function(el){
+      var bg = el.style.backgroundImage;
+      if (bg && bg !== 'none' && !el._bg) { el._bg = bg; el.style.backgroundImage = 'none'; io.observe(el); }
+    });
+  }
+  defer(document);
+  new MutationObserver(function(ms){
+    ms.forEach(function(m){ m.addedNodes.forEach(function(n){ defer(n); }); });
+  }).observe(document.body, { childList: true, subtree: true });
+})();
+</script>
 </body>
 </html>
